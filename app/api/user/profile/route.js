@@ -19,15 +19,25 @@ export async function PUT(req) {
 
     await connectDB();
     const body = await req.json();
-    const allowedFields = ["firstName", "lastName", "bio", "skills", "hourlyRate", "location", "website", "portfolioUrl", "role"];
+
+    // ✅ Make sure location and portfolio are here
+    const allowedFields = ["bio", "skills", "hourlyRate", "location", "portfolio", "role"];
     const update = {};
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) update[field] = body[field];
     });
 
-    const user = await User.findOneAndUpdate({ clerkId: userId }, update, { new: true }).lean();
-    return NextResponse.json({ user });
+    console.log("Updating user with:", update); // ✅ debug
+
+    const user = await User.findOneAndUpdate(
+      { clerkId: userId },
+      { $set: update }, // ✅ use $set explicitly
+      { new: true, lean: true }
+    );
+
+    return NextResponse.json({ user: JSON.parse(JSON.stringify(user)) });
   } catch (error) {
+    console.error("Profile update error:", error);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
 }

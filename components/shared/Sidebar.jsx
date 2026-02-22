@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Code2, LayoutDashboard, FolderPlus, Search, FileText, MessageSquare, Star, Shield } from "lucide-react";
+import { User } from "lucide-react";
 
 const clientNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -12,15 +13,17 @@ const clientNav = [
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/messages", label: "Messages", icon: MessageSquare, badge: true },
   { href: "/reviews", label: "Reviews", icon: Star },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 const developerNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/developer/projects", label: "Browse Projects", icon: Search },
+  { href: "/developer/projects", label: "Browse Projects", icon: Search }, // ✅ already correct
   { href: "/developer/bids", label: "My Bids", icon: FileText },
   { href: "/contracts", label: "Contracts", icon: FileText },
   { href: "/messages", label: "Messages", icon: MessageSquare, badge: true },
   { href: "/reviews", label: "Reviews", icon: Star },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 // ✅ Admin gets its own nav

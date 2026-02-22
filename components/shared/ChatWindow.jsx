@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { getSocket } from '@/lib/socket-client'
 import { Send } from 'lucide-react'
+import Link from 'next/link'
 
 function formatTime(date) {
   return new Date(date).toLocaleTimeString([], {
@@ -96,23 +97,26 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] bg-white rounded-xl border border-slate-200 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-white">
-        {otherUser?.imageUrl ? (
-          <img src={otherUser.imageUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">
-            {otherUser?.name?.[0] || '?'}
-          </div>
-        )}
-        <div>
-          <div className="font-semibold text-slate-900">{otherUser?.name || 'User'}</div>
-          {isTyping && (
-            <span className="text-xs text-slate-400">typing...</span>
-          )}
-        </div>
+    {/* Header */}
+<div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-white">
+  <Link href={`/profile/${otherUser?.clerkId}`}>
+    {otherUser?.imageUrl ? (
+      <img src={otherUser.imageUrl} alt="" className="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition" />
+    ) : (
+      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 cursor-pointer hover:opacity-80 transition">
+        {otherUser?.name?.[0] || '?'}
       </div>
-
+    )}
+  </Link>
+  <div>
+    <Link href={`/profile/${otherUser?.clerkId}`}>
+      <div className="font-semibold text-slate-900 hover:text-blue-600 cursor-pointer transition">
+        {otherUser?.name || 'User'}
+      </div>
+    </Link>
+    {isTyping && <span className="text-xs text-slate-400">typing...</span>}
+  </div>
+</div>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-5 space-y-3">
         {messages.length === 0 && (

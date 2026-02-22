@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   skills: [{ type: String }],
   hourlyRate: { type: Number },
   portfolio: { type: String },
+  location: { type: String, default: "" },
   totalEarned: { type: Number, default: 0 },
   totalSpent: { type: Number, default: 0 },
   averageRating: { type: Number, default: 0 },

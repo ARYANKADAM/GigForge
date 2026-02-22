@@ -54,6 +54,15 @@ export default function AdminClient() {
     setProjects(prev => prev.filter(p => p._id !== id));
   };
 
+  // ✅ Helper to display budget
+  const getBudget = (project) => {
+    if (project.budgetMin && project.budgetMax) {
+      return `${formatCurrency(project.budgetMin)} - ${formatCurrency(project.budgetMax)}`;
+    }
+    if (project.budget) return formatCurrency(project.budget);
+    return "N/A";
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -200,13 +209,13 @@ export default function AdminClient() {
                     <p className="text-xs text-slate-400 truncate max-w-xs">{project.description}</p>
                   </td>
                   <td className="px-4 py-3 text-slate-500 capitalize">{project.category}</td>
-                  <td className="px-4 py-3 font-medium">
-                    {formatCurrency(project.budgetMin)} - {formatCurrency(project.budgetMax)}
-                  </td>
+                  {/* ✅ Fixed NaN budget */}
+                  <td className="px-4 py-3 font-medium">{getBudget(project)}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       project.status === "open" ? "bg-green-100 text-green-700" :
                       project.status === "in_progress" ? "bg-blue-100 text-blue-700" :
+                      project.status === "completed" ? "bg-teal-100 text-teal-700" :
                       "bg-slate-100 text-slate-600"
                     }`}>{project.status}</span>
                   </td>
