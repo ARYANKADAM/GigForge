@@ -3,6 +3,7 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import { Bell } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { formatDate } from "@/lib/utils";
+import BackButton from "./BackButton";
 
 export default function Header() {
   const { user, isLoaded } = useUser();
@@ -33,9 +34,13 @@ export default function Header() {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0">
-      <div>
-        <p className="text-sm text-slate-500">Welcome back,</p>
-        <p className="font-semibold text-slate-900">{name || "..."}</p>
+      <div className="flex items-center gap-4">
+        {/* back arrow will simply call router.back() */}
+        <BackButton />
+        <div>
+          <p className="text-sm text-slate-500">Welcome back,</p>
+          <p className="font-semibold text-slate-900">{name || "..."}</p>
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="relative" ref={ref}>

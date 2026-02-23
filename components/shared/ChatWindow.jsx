@@ -22,9 +22,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const typingTimeout = useRef(null)
   const socket = useRef(null)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     socket.current = getSocket()
@@ -78,14 +76,10 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-
-      // Add locally for sender (deduplicated)
       setMessages(prev => {
         if (prev.some(m => m._id === data._id)) return prev
         return [...prev, data]
       })
-
-      // Emit to socket for the other person
       socket.current?.emit('send_message', { ...data, roomId })
       setInput('')
     } catch (err) {
@@ -96,85 +90,120 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] bg-white rounded-xl border border-slate-200 overflow-hidden">
-    {/* Header */}
-<div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-white">
-  <Link href={`/profile/${otherUser?.clerkId}`}>
-    {otherUser?.imageUrl ? (
-      <img src={otherUser.imageUrl} alt="" className="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition" />
-    ) : (
-      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 cursor-pointer hover:opacity-80 transition">
-        {otherUser?.name?.[0] || '?'}
+    <div className="flex flex-col h-full bg-[#0a0a0a]">
+
+      {/* Chat Header */}
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d] shrink-0">
+        <Link href={`/profile/${otherUser?.clerkId}`} className="shrink-0">
+          {otherUser?.imageUrl ? (
+            <img src={otherUser.imageUrl} alt="" className="w-9 h-9 rounded-full object-cover hover:opacity-80 transition" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/60 text-sm hover:opacity-80 transition">
+              {otherUser?.name?.[0] || '?'}
+            </div>
+          )}
+        </Link>
+        <div className="flex-1 min-w-0">
+          <Link href={`/profile/${otherUser?.clerkId}`}>
+            <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
+              {otherUser?.name || 'User'}
+            </p>
+          </Link>
+          {isTyping ? (
+            <p className="text-xs text-green-400">typing...</p>
+          ) : (
+            <p className="text-xs text-white/25">Active now</p>
+          )}
+        </div>
       </div>
-    )}
-  </Link>
-  <div>
-    <Link href={`/profile/${otherUser?.clerkId}`}>
-      <div className="font-semibold text-slate-900 hover:text-blue-600 cursor-pointer transition">
-        {otherUser?.name || 'User'}
-      </div>
-    </Link>
-    {isTyping && <span className="text-xs text-slate-400">typing...</span>}
-  </div>
-</div>
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-3">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 text-sm py-8">
-            No messages yet. Say hello! 👋
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+              {otherUser?.imageUrl ? (
+                <img src={otherUser.imageUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <span className="text-white/30 text-lg font-bold">{otherUser?.name?.[0] || '?'}</span>
+              )}
+            </div>
+            <p className="text-white/30 text-sm font-medium">{otherUser?.name || 'User'}</p>
+            <p className="text-white/15 text-xs mt-1">Send a message to start the conversation</p>
           </div>
         )}
+
+        {/* Group messages by date */}
         {messages.map((msg, index) => {
           const isOwn = msg.senderId === currentUserId
+          const prevMsg = messages[index - 1]
+          const showAvatar = !isOwn && (!prevMsg || prevMsg.senderId !== msg.senderId)
+
           return (
-            <div key={msg._id || `msg-${index}`} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
+            <div key={msg._id || `msg-${index}`} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+
+              {/* Avatar for other user */}
               {!isOwn && (
-                otherUser?.imageUrl ? (
-                  <img
-                    src={otherUser.imageUrl}
-                    alt=""
-                    className="w-8 h-8 rounded-full object-cover shrink-0 mt-1"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0 mt-1">
-                    {otherUser?.name?.[0] || '?'}
-                  </div>
-                )
+                <div className="w-6 shrink-0">
+                  {showAvatar && (
+                    otherUser?.imageUrl ? (
+                      <img src={otherUser.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-xs font-bold">
+                        {otherUser?.name?.[0] || '?'}
+                      </div>
+                    )
+                  )}
+                </div>
               )}
-              <div className={`max-w-xs lg:max-w-md flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-                <div className={`px-4 py-2.5 rounded-2xl text-sm ${
+
+              <div className={`flex flex-col gap-0.5 max-w-xs lg:max-w-sm ${isOwn ? 'items-end' : 'items-start'}`}>
+                <div className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                   isOwn
-                    ? 'bg-blue-600 text-white rounded-tr-sm'
-                    : 'bg-slate-100 text-slate-900 rounded-tl-sm'
+                    ? 'bg-white text-black rounded-br-sm'
+                    : 'bg-[#1a1a1a] text-white/80 border border-white/5 rounded-bl-sm'
                 }`}>
                   {msg.content}
                 </div>
-                {/* ✅ Only render time on client to avoid hydration mismatch */}
-                <span className="text-xs text-slate-400 mt-1 px-1">
+                <span className="text-xs text-white/15 px-1">
                   {mounted ? formatTime(msg.createdAt) : ''}
                 </span>
               </div>
             </div>
           )
         })}
+
+        {/* Typing indicator */}
+        {isTyping && (
+          <div className="flex gap-2 items-end">
+            <div className="w-6 h-6 rounded-full bg-white/10 shrink-0" />
+            <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={sendMessage} className="flex items-center gap-3 px-4 py-3 border-t border-slate-100">
+      <form onSubmit={sendMessage} className="flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d] shrink-0">
         <input
           type="text"
           value={input}
           onChange={handleInputChange}
+          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e)}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2.5 bg-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
         />
         <button
           type="submit"
           disabled={!input.trim() || sending}
-          className="w-10 h-10 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-xl flex items-center justify-center transition-colors shrink-0"
+          className="w-9 h-9 bg-white hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 text-black rounded-xl flex items-center justify-center transition-all shrink-0"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5" />
         </button>
       </form>
     </div>

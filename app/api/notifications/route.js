@@ -13,11 +13,22 @@ export async function GET() {
   return NextResponse.json(JSON.parse(JSON.stringify(notifications)));
 }
 
-export async function PATCH() {
+export async function PATCH(req) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  await Notification.updateMany({ userId, isRead: false }, { isRead: true });
+
+  // allow callers to specify filters (type, link) so we can mark only message notifications
+  let body = {};
+  try {
+    body = await req.json();
+  } catch {}
+
+  const query = { userId, isRead: false };
+  if (body.type) query.type = body.type;
+  if (body.link) query.link = body.link;
+
+  await Notification.updateMany(query, { isRead: true });
   return NextResponse.json({ success: true });
 }

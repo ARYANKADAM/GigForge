@@ -15,7 +15,9 @@ export async function GET() {
       { clientClerkId: userId },
       { developerId: userId },
     ],
-  }).sort({ createdAt: -1 }).lean();
+  })
+    .populate("projectId", "title")
+    .sort({ createdAt: -1 }).lean();
 
   return NextResponse.json({ contracts: JSON.parse(JSON.stringify(contracts)) });
 }

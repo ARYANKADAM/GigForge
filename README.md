@@ -1,8 +1,8 @@
-# FreelanceHub 🚀
+# GigForge 🚀
 
 A full-stack freelance marketplace platform built with **Next.js 14**, **MongoDB**, **Stripe**, and **Socket.io** — connecting clients with developers for project-based work.
 
-![FreelanceHub](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![GigForge](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge&logo=mongodb)
 ![Stripe](https://img.shields.io/badge/Stripe-Payments-blue?style=for-the-badge&logo=stripe)
 ![Clerk](https://img.shields.io/badge/Clerk-Auth-purple?style=for-the-badge)
@@ -175,7 +175,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 ## 💳 Payment Flow
 
-FreelanceHub uses **Stripe manual capture** (escrow) for secure payments:
+GigForge uses **Stripe manual capture** (escrow) for secure payments:
 
 ```
 1. Client posts project
