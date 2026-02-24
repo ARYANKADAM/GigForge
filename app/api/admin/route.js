@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { connectDB } from "@/lib/db";
+import connectDB from "@/lib/db";
 import User from "@/models/User";
 import Project from "@/models/Project";
 import Contract from "@/models/Contract";
