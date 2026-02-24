@@ -70,7 +70,7 @@ export default async function ChatRoomPage({ params }) {
   );
 
   return (
-    <div className="h-[calc(100vh-65px)] flex">
+    <div className="h-screen flex">
 
       {/* Contacts Sidebar */}
       <div className="w-80 border-r border-white/5 flex flex-col bg-[#0d0d0d] shrink-0">

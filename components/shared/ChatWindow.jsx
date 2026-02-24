@@ -90,7 +90,8 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a]">
+    <div className="relative flex flex-col h-full">
+      <div className="relative flex flex-col h-full">
 
       {/* Chat Header */}
       <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d] shrink-0">
@@ -207,5 +208,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </button>
       </form>
     </div>
+  </div>
   )
 }

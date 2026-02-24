@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, FolderPlus } from "lucide-react";
+import { Loader2, FolderPlus, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 
 const CATEGORIES = [
@@ -14,10 +14,43 @@ export default function NewProjectPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAiBox, setShowAiBox] = useState(false);
+  const [idea, setIdea] = useState("");
   const [form, setForm] = useState({
     title: "", description: "", category: "",
     budget: "", deadline: "", skills: "",
   });
+
+  const generateBrief = async () => {
+    if (!idea.trim()) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/ai/generate-brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate");
+
+      setForm({
+        title: data.title || "",
+        description: data.description || "",
+        category: data.category || "",
+        budget: data.budget?.toString() || "",
+        deadline: data.deadline || "",
+        skills: data.skills?.join(", ") || "",
+      });
+      setShowAiBox(false);
+      setIdea("");
+      toast({ title: "✨ Brief generated!", description: "Review and edit the details before posting." });
+    } catch (err) {
+      toast({ title: "AI Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,8 +93,58 @@ export default function NewProjectPage() {
         <p className="text-white/30 text-xs ml-6">Fill in the details and developers will start bidding.</p>
       </div>
 
+      {/* AI Brief Generator Box */}
+      {!showAiBox ? (
+        <button
+          onClick={() => setShowAiBox(true)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 text-purple-400 rounded-xl text-sm font-medium transition-all group"
+        >
+          <Sparkles className="w-4 h-4 group-hover:animate-pulse" />
+          Generate project brief with AI
+        </button>
+      ) : (
+        <div className="bg-[#111111] border border-purple-500/20 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <p className="text-sm font-semibold text-white">AI Brief Generator</p>
+            </div>
+            <button onClick={() => setShowAiBox(false)} className="text-white/20 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-white/30 text-xs mb-3">
+            Describe your idea in plain English — AI will generate a complete project brief for you.
+          </p>
+          <textarea
+            rows={3}
+            value={idea}
+            onChange={e => setIdea(e.target.value)}
+            placeholder='e.g. "I need an app like Uber but for home cleaning services with real-time tracking"'
+            className={`${inputClass} resize-none mb-3`}
+          />
+          <button
+            onClick={generateBrief}
+            disabled={aiLoading || !idea.trim()}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-300 disabled:opacity-50 rounded-lg text-sm font-semibold transition-all"
+          >
+            {aiLoading
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+              : <><Sparkles className="w-4 h-4" /> Generate Brief</>
+            }
+          </button>
+        </div>
+      )}
+
       {/* Form */}
       <form onSubmit={handleSubmit} className="bg-[#111111] border border-white/8 rounded-xl p-6 space-y-5">
+
+        {form.title && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <p className="text-purple-300 text-xs">AI generated — review and edit before posting</p>
+          </div>
+        )}
 
         {/* Title */}
         <div>
@@ -82,7 +165,7 @@ export default function NewProjectPage() {
           <textarea
             rows={5}
             required
-            placeholder="Describe your project in detail — what you need, expected deliverables, and any specific requirements..."
+            placeholder="Describe your project in detail..."
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
             className={`${inputClass} resize-none`}
@@ -146,20 +229,17 @@ export default function NewProjectPage() {
           <p className="text-white/15 text-xs mt-1.5">Separate skills with commas</p>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-white/5" />
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
           className="w-full flex items-center justify-center gap-2 bg-white hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 text-black font-semibold py-2.5 rounded-xl transition-all text-sm"
         >
-          {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Posting...</>
-          ) : (
-            <><FolderPlus className="w-4 h-4" /> Post Project</>
-          )}
+          {loading
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Posting...</>
+            : <><FolderPlus className="w-4 h-4" /> Post Project</>
+          }
         </button>
       </form>
     </div>

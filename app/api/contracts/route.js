@@ -2,6 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Contract from "@/models/Contract";
+// make sure related models are registered so populates work
+import "@/models/Project";
+import "@/models/Bid";
 
 export async function GET() {
   const { userId } = await auth();

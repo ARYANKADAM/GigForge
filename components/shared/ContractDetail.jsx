@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { MessageSquare, DollarSign, CheckCircle, AlertTriangle, Lock, ArrowLeft } from "lucide-react";
+import Timeline from "@/components/shared/Timeline";
 
 export default function ContractDetail({ contract, currentUserId }) {
   const { toast } = useToast();
@@ -12,6 +13,24 @@ export default function ContractDetail({ contract, currentUserId }) {
   const [loading, setLoading] = useState("");
   const isClient = contract.clientId === currentUserId;
   const isDeveloper = contract.developerId === currentUserId;
+
+  // calculate remaining delivery days based on creation date
+  const computeRemaining = () => {
+    const start = new Date(contract.createdAt).getTime();
+    const now = Date.now();
+    const elapsedDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+    const remaining = contract.deliveryDays - elapsedDays;
+    return remaining > 0 ? remaining : 0;
+  };
+  const [remainingDays, setRemainingDays] = useState(computeRemaining());
+
+  useEffect(() => {
+    // update the counter once per hour to keep it fresh
+    const iv = setInterval(() => {
+      setRemainingDays(computeRemaining());
+    }, 1000 * 60 * 60);
+    return () => clearInterval(iv);
+  }, []);
 
   const fundEscrow = async () => {
     setLoading("fund");
@@ -113,8 +132,11 @@ export default function ContractDetail({ contract, currentUserId }) {
           </div>
           <div className="bg-white/5 border border-white/8 rounded-xl p-4">
             <p className="text-xs text-white/30 mb-1">Delivery Timeline</p>
-            <p className="text-2xl font-bold text-white">{contract.deliveryDays}
-              <span className="text-sm font-normal text-white/30 ml-1">days</span>
+            <p className="text-2xl font-bold text-white">
+              {remainingDays}
+              <span className="text-sm font-normal text-white/30 ml-1">
+                day{remainingDays !== 1 ? "s" : ""} left
+              </span>
             </p>
           </div>
         </div>
@@ -218,6 +240,13 @@ export default function ContractDetail({ contract, currentUserId }) {
           )}
         </div>
       </div>
+
+      {/* timeline section */}
+      <Timeline
+        contractId={contract._id}
+        initialEntries={contract.timeline || []}
+        canAdd={isDeveloper}
+      />
     </div>
   );
 }

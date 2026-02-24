@@ -7,6 +7,15 @@ const MilestoneSchema = new mongoose.Schema({
   dueDate: { type: Date },
 });
 
+// timeline entries allow tracking progress or notes for the contract
+const TimelineEntrySchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  date: { type: Date, default: Date.now },
+  createdBy: { type: String, required: true }, // clerkId of user who added
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+});
+
 const ContractSchema = new mongoose.Schema({
   projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
   bidId: { type: mongoose.Schema.Types.ObjectId, ref: "Bid", required: true },
@@ -18,6 +27,7 @@ const ContractSchema = new mongoose.Schema({
   escrowStatus: { type: String, enum: ["pending", "funded", "released", "refunded"], default: "pending" },
   stripePaymentIntentId: { type: String },
   milestones: [MilestoneSchema],
+  timeline: [TimelineEntrySchema],
   roomId: { type: String }, // chat room
   completedAt: { type: Date },
 }, { timestamps: true });

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import BidCard from "@/components/shared/BidCard";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, DollarSign, Tag, Users, ArrowLeft, Edit2, Trash2, X, Save, Loader2 } from "lucide-react";
+import { Calendar, DollarSign, Tag, Users, ArrowLeft, Edit2, Trash2, X, Save, Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +25,8 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rankings, setRankings] = useState({});
+  const [rankLoading, setRankLoading] = useState(false);
   const [form, setForm] = useState({
     title: project.title || "",
     description: project.description || "",
@@ -33,6 +35,27 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
     deadline: project.deadline ? new Date(project.deadline).toISOString().split("T")[0] : "",
     skills: project.skills?.join(", ") || "",
   });
+
+  const rankBids = async () => {
+    setRankLoading(true);
+    try {
+      const res = await fetch("/api/ai/rank-bids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bids, project }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const map = {};
+      data.forEach(r => { map[r.id] = r; });
+      setRankings(map);
+      toast({ title: "✨ Bids ranked by AI!", description: "Best matches highlighted." });
+    } catch (err) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setRankLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -92,11 +115,10 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
       <div className="bg-[#111111] border border-white/8 rounded-xl p-6">
         <div className="flex items-start justify-between mb-4 gap-4">
           <h1 className="text-xl font-bold text-white">{project.title}</h1>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full border capitalize ${STATUS_STYLES[project.status] || STATUS_STYLES.open}`}>
               {project.status?.replace("_", " ")}
             </span>
-            {/* Edit + Delete — owner only */}
             {isOwner && project.status === "open" && (
               <>
                 <button
@@ -147,9 +169,32 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
 
       {/* Bids */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold text-white">
-          Bids <span className="text-white/30 font-normal text-sm">({bids.length})</span>
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-white">
+            Bids <span className="text-white/30 font-normal text-sm">({bids.length})</span>
+          </h2>
+          {bids.length > 0 && isOwner && (
+            <button
+              onClick={rankBids}
+              disabled={rankLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+            >
+              {rankLoading
+                ? <><Loader2 className="w-3 h-3 animate-spin" /> Ranking...</>
+                : <><Sparkles className="w-3 h-3" /> AI Rank Bids</>
+              }
+            </button>
+          )}
+        </div>
+
+        {/* AI Ranking info bar */}
+        {Object.keys(rankings).length > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <p className="text-purple-300 text-xs">AI has ranked all bids — best matches are highlighted below</p>
+          </div>
+        )}
+
         {bids.length === 0 ? (
           <div className="bg-[#111111] border border-white/8 rounded-xl py-12 text-center">
             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
@@ -160,20 +205,31 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
           </div>
         ) : (
           <div className="space-y-3">
-            {bids.map(bid => (
-              <BidCard key={bid._id} bid={bid} projectId={project._id} isClient={isOwner} projectStatus={project.status} />
-            ))}
+            {bids
+              .slice()
+              .sort((a, b) => {
+                const scoreA = rankings[a._id]?.score || 0;
+                const scoreB = rankings[b._id]?.score || 0;
+                return scoreB - scoreA;
+              })
+              .map(bid => (
+                <BidCard
+                  key={bid._id}
+                  bid={bid}
+                  projectId={project._id}
+                  isClient={isOwner}
+                  projectStatus={project.status}
+                  ranking={rankings[bid._id]}
+                />
+              ))}
           </div>
         )}
       </div>
 
-      {/* ── Edit Modal ── */}
+      {/* Edit Modal */}
       {showEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowEdit(false)} />
-
-          {/* Modal */}
           <div className="relative bg-[#111111] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-base font-bold text-white">Edit Project</h2>
@@ -183,93 +239,44 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
             </div>
 
             <div className="space-y-4">
-              {/* Title */}
               <div>
                 <label className={labelClass}>Title</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  className={inputClass}
-                />
+                <input type="text" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className={inputClass} />
               </div>
-
-              {/* Description */}
               <div>
                 <label className={labelClass}>Description</label>
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  className={`${inputClass} resize-none`}
-                />
+                <textarea rows={4} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className={`${inputClass} resize-none`} />
               </div>
-
-              {/* Category + Budget */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Category</label>
-                  <select
-                    value={form.category}
-                    onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                    className={`${inputClass} bg-[#111111]`}
-                  >
-                    {CATEGORIES.map(c => (
-                      <option key={c} value={c} className="bg-[#111111]">{c}</option>
-                    ))}
+                  <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={`${inputClass} bg-[#111111]`}>
+                    {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#111111]">{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className={labelClass}>Budget (USD)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm">$</span>
-                    <input
-                      type="number"
-                      value={form.budget}
-                      onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
-                      className={`${inputClass} pl-7`}
-                    />
+                    <input type="number" value={form.budget} onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} className={`${inputClass} pl-7`} />
                   </div>
                 </div>
               </div>
-
-              {/* Deadline */}
               <div>
                 <label className={labelClass}>Deadline</label>
-                <input
-                  type="date"
-                  value={form.deadline}
-                  onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                  className={`${inputClass} [color-scheme:dark]`}
-                />
+                <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} className={`${inputClass} [color-scheme:dark]`} />
               </div>
-
-              {/* Skills */}
               <div>
                 <label className={labelClass}>Skills (comma-separated)</label>
-                <input
-                  type="text"
-                  value={form.skills}
-                  onChange={e => setForm(f => ({ ...f, skills: e.target.value }))}
-                  placeholder="React, Node.js, MongoDB"
-                  className={inputClass}
-                />
+                <input type="text" value={form.skills} onChange={e => setForm(f => ({ ...f, skills: e.target.value }))} placeholder="React, Node.js, MongoDB" className={inputClass} />
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-2 mt-6 pt-4 border-t border-white/5">
-              <button
-                onClick={() => setShowEdit(false)}
-                className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white/50 hover:text-white rounded-lg text-sm font-medium transition-all"
-              >
+              <button onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white/50 hover:text-white rounded-lg text-sm font-medium transition-all">
                 Cancel
               </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 text-black font-semibold rounded-lg text-sm transition-all"
-              >
+              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 text-black font-semibold rounded-lg text-sm transition-all">
                 {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Changes</>}
               </button>
             </div>
@@ -277,7 +284,7 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
         </div>
       )}
 
-      {/* ── Delete Confirm Modal ── */}
+      {/* Delete Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
@@ -290,17 +297,10 @@ export default function ProjectDetailClient({ project, bids, currentUserId, isOw
               <p className="text-white/30 text-xs">This will permanently delete <span className="text-white/60 font-medium">"{project.title}"</span> and all its bids. This cannot be undone.</p>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white/50 hover:text-white rounded-lg text-sm font-medium transition-all"
-              >
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white/50 hover:text-white rounded-lg text-sm font-medium transition-all">
                 Cancel
               </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 disabled:opacity-50 rounded-lg text-sm font-semibold transition-all"
-              >
+              <button onClick={handleDelete} disabled={deleting} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 disabled:opacity-50 rounded-lg text-sm font-semibold transition-all">
                 {deleting ? <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</> : <><Trash2 className="w-4 h-4" /> Delete</>}
               </button>
             </div>

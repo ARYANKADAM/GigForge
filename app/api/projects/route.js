@@ -29,13 +29,30 @@ export async function POST(req) {
   try {
     const { userId } = await auth()
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     await connectDB()
+
+    // make sure the profile exists and has the right role
     const user = await User.findOne({ clerkId: userId })
-    if (!user || user.role !== 'client') return NextResponse.json({ error: 'Only clients can post projects' }, { status: 403 })
+    if (!user) {
+      // the client collection is populated during onboarding –
+      // missing record usually means the user skipped that step
+      return NextResponse.json(
+        { error: 'Profile not found.  Please complete onboarding and choose a role.' },
+        { status: 403 }
+      )
+    }
+
+    // only clients (and optionally admins) are allowed to create projects
+    if (user.role !== 'client' && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Only clients can post projects' }, { status: 403 })
+    }
+
     const { title, description, category, budget, deadline, skills } = await req.json()
     if (!title || !description || !category || budget == null) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
     const project = await Project.create({
       title,
       description,
