@@ -1,7 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import Sidebar from "@/components/shared/Sidebar";
-import TopBar from "@/components/shared/TopBar";
+import DashboardShell from "@/components/shared/DashboardShell";
 
 export default async function DashboardLayout({ children }) {
   let userId;
@@ -30,14 +29,8 @@ export default async function DashboardLayout({ children }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#0a0a0a] overflow-hidden">
-      <Sidebar role={String(role)} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar user={user} />
-        <main className="flex-1 overflow-y-auto p-6 main-scroll">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell role={String(role)} user={user}>
+      {children}
+    </DashboardShell>
   );
 }

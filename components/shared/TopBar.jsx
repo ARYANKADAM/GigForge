@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 
-export default function TopBar({ user }) {
+export default function TopBar({ user, onMenuClick }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifs, setShowNotifs] = useState(false);
   const router = useRouter();
@@ -45,6 +45,17 @@ export default function TopBar({ user }) {
 
   return (
     <header className="bg-[#0d0d0d] border-b border-white/5 px-6 py-3.5 flex items-center justify-between">
+
+      {/* mobile menu + brand */}
+      <button
+        onClick={onMenuClick}
+        className="menu-button flex items-center mr-3 p-2 rounded-lg md:hidden hover:bg-white/5 transition-colors"
+      >
+        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <span className="ml-2 font-bold text-white">GigForge</span>
+      </button>
 
       {/* Search */}
       <div className="relative max-w-sm w-full">
