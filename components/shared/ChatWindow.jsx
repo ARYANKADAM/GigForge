@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { getSocket } from '@/lib/socket-client'
 import { Send } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 function formatTime(date) {
   return new Date(date).toLocaleTimeString([], {
@@ -12,6 +12,97 @@ function formatTime(date) {
     hour12: false,
   })
 }
+
+// ─── Ripple Background ───────────────────────────────────────────────────────
+
+const ROWS = 18
+const COLS = 22
+const CELL = 52
+
+const DivGrid = ({ clickedCell, rippleKey }) => {
+  const cells = useMemo(
+    () => Array.from({ length: ROWS * COLS }, (_, idx) => idx),
+    []
+  )
+
+  return (
+    <div
+      key={`grid-${rippleKey}`}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${COLS}, ${CELL}px)`,
+        gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
+        width: COLS * CELL,
+        height: ROWS * CELL,
+      }}
+    >
+      {cells.map((idx) => {
+        const rowIdx = Math.floor(idx / COLS)
+        const colIdx = idx % COLS
+        const distance = clickedCell
+          ? Math.hypot(clickedCell.row - rowIdx, clickedCell.col - colIdx)
+          : 0
+        const delay = clickedCell ? Math.max(0, distance * 45) : 0
+        const duration = 200 + distance * 75
+
+        return (
+          <div
+            key={idx}
+            className={cn(
+              'border-[0.5px] opacity-30',
+              clickedCell && 'animate-cell-ripple [animation-fill-mode:none]'
+            )}
+            style={{
+              backgroundColor: '#0a0a0a',
+              borderColor: '#1e1e1e',
+              ...(clickedCell && {
+                '--delay': `${delay}ms`,
+                '--duration': `${duration}ms`,
+              }),
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+const ChatRippleBg = () => {
+  const [clickedCell, setClickedCell] = useState(null)
+  const [rippleKey, setRippleKey] = useState(0)
+
+  // Auto-fire a random ripple every 3–6 seconds
+  useEffect(() => {
+    const fire = () => {
+      const row = Math.floor(Math.random() * ROWS)
+      const col = Math.floor(Math.random() * COLS)
+      setClickedCell({ row, col })
+      setRippleKey(k => k + 1)
+    }
+
+    fire() // fire once on mount
+    const id = setInterval(fire, 3500 + Math.random() * 2500)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Radial fade so edges dissolve */}
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 20%, #0a0a0a 75%)',
+        }}
+      />
+      {/* Center the grid */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <DivGrid clickedCell={clickedCell} rippleKey={rippleKey} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Chat Window ─────────────────────────────────────────────────────────────
 
 export default function ChatWindow({ roomId, currentUserId, initialMessages, otherUser }) {
   const [messages, setMessages] = useState(initialMessages || [])
@@ -22,7 +113,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const bottomRef = useRef(null)
   const typingTimeout = useRef(null)
   const socket = useRef(null)
-  const router = useRouter()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -92,14 +182,15 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    // 100dvh shrinks when the virtual keyboard opens on mobile
-    // flex-col so header + messages + input stack vertically
     <div
-      className="flex flex-col bg-[#0a0a0a] text-white w-full"
+      className="relative flex flex-col bg-[#0a0a0a] text-white w-full"
       style={{ height: '100dvh' }}
     >
-      {/* Chat Header — fixed height, never scrolls */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d] shrink-0">
+      {/* Ripple background — sits behind everything */}
+      <ChatRippleBg />
+
+      {/* Chat Header */}
+      <div className="relative z-10 flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d]/80 backdrop-blur-sm shrink-0">
         <Link href={`/profile/${otherUser?.clerkId}`} className="shrink-0">
           {otherUser?.imageUrl ? (
             <img src={otherUser.imageUrl} alt="" className="w-9 h-9 rounded-full object-cover hover:opacity-80 transition" />
@@ -110,24 +201,11 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           )}
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-md text-white/80 hover:bg-white/5"
-              aria-label="Back"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path d="M19 12H5" />
-                <path d="M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <Link href={`/profile/${otherUser?.clerkId}`} className="min-w-0">
-              <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
-                {otherUser?.name || 'User'}
-              </p>
-            </Link>
-          </div>
+          <Link href={`/profile/${otherUser?.clerkId}`}>
+            <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
+              {otherUser?.name || 'User'}
+            </p>
+          </Link>
           {isTyping ? (
             <p className="text-xs text-green-400">typing...</p>
           ) : (
@@ -136,9 +214,9 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </div>
       </div>
 
-      {/* Messages — flex-1 fills remaining space, THIS is the only scrollable element */}
+      {/* Messages */}
       <div
-        className="flex-1 min-h-0 px-5 py-4 space-y-2"
+        className="relative z-10 flex-1 min-h-0 px-5 py-4 space-y-2"
         style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
       >
         {messages.length === 0 && (
@@ -180,7 +258,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
                 <div className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                   isOwn
                     ? 'bg-white text-black rounded-br-sm'
-                    : 'bg-[#1a1a1a] text-white/80 border border-white/5 rounded-bl-sm'
+                    : 'bg-[#1a1a1a]/90 backdrop-blur-sm text-white/80 border border-white/5 rounded-bl-sm'
                 }`}>
                   {msg.content}
                 </div>
@@ -196,7 +274,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         {isTyping && (
           <div className="flex gap-2 items-end">
             <div className="w-6 h-6 rounded-full bg-white/10 shrink-0" />
-            <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+            <div className="bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
               <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -207,10 +285,10 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar — shrink-0 so it never grows/shrinks, always at the bottom */}
+      {/* Input bar */}
       <form
         onSubmit={sendMessage}
-        className="shrink-0 sticky bottom-0 z-20 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
+        className="relative z-10 shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]/80 backdrop-blur-sm"
       >
         <input
           type="text"

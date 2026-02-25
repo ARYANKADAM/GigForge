@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function AuthLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center relative overflow-hidden">
@@ -31,9 +33,17 @@ export default function AuthLayout({ children }) {
       />
 
       <div className="relative z-10 w-full flex flex-col items-center gap-6 px-4 py-10">
-        <a href="/" className="text-white font-bold text-xl tracking-tight">
-          &lt;/&gt; GigForge
+        {/* Centered logo for clean header */}
+        <a href="/" className="flex items-center gap-2">
+          <img 
+            src="/icon0.svg" 
+            alt="GigForge" 
+            className="w-6 h-6"
+            style={{ filter: "brightness(0) invert(1)" }}
+          />
+          <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
         </a>
+
         {children}
       </div>
     </div>

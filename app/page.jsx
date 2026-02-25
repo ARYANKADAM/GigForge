@@ -19,10 +19,16 @@ export default function LandingPage() {
       />
 
       {/* Navbar */}
-      <nav className="relative z-20 flex items-center justify-between px-8 py-6 max-w-8xl mx-auto w-full">
-        <span className="text-white font-bold text-xl tracking-tight">
-          &lt;/&gt; GigForge
-        </span>
+      <nav className="relative z-20 flex items-center justify-between px-9 py-6 max-w-8xl mx-auto w-full">
+       <a href="/" className="flex items-center gap-2">
+  <img 
+    src="/icon0.svg" 
+    alt="GigForge" 
+    className="w-6 h-6"
+    style={{ filter: "brightness(0) invert(1)" }}
+  />
+  <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
+</a>
         <div className="flex items-center gap-3">
           <Link
             href="/sign-in"

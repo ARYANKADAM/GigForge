@@ -79,98 +79,107 @@ export default function ProfileClient({ initialUser }) {
   return (
     <div className="max-w-2xl mx-auto space-y-4">
 
-      {/* Header with ripple */}
-      <div className="relative rounded-xl overflow-hidden border border-white/5 mb-2">
-        <BackgroundRippleEffect rows={5} cols={20} cellSize={48} />
-        <div
-          className="absolute inset-0 pointer-events-none z-10"
-          style={{
-            background: "radial-gradient(ellipse 100% 100% at 50% 0%, transparent 20%, #0a0a0a 100%)",
-          }}
-        />
-        <div className="relative z-20 flex items-center justify-between px-6 py-5">
-          <div>
-            <h1 className="text-xl font-bold text-white">My Profile</h1>
-            <p className="text-white/30 text-xs mt-0.5">Manage your public profile</p>
-          </div>
-          {!editing ? (
-            <button
-              onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-white/90 transition-all"
-            >
-              <Edit2 className="w-3.5 h-3.5" /> Edit Profile
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={handleCancel}
-                className="px-3 py-2 bg-white/5 border border-white/10 text-white/60 text-sm font-medium rounded-lg hover:bg-white/10 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-all"
-              >
-                <Check className="w-3.5 h-3.5" />
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
+      {/* Profile Card */}
+      <div className="bg-[#111111] border border-white/8 rounded-xl overflow-hidden">
+
+        {/* Avatar + Name section WITH ripple bg */}
+        <div className="relative overflow-hidden">
+          {/* Ripple background */}
+          <BackgroundRippleEffect rows={5} cols={20} cellSize={48} />
+
+          {/* Radial fade so the ripple dissolves into the card bg */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              background: "radial-gradient(ellipse 100% 100% at 50% 0%, transparent 10%, #111111 80%)",
+            }}
+          />
+
+          {/* Content sits above ripple */}
+          <div className="relative z-20 flex items-center justify-between px-6 pt-6 pb-5">
+            {/* Avatar + name + email + role */}
+            <div className="flex items-center gap-4">
+              {clerkUser?.imageUrl ? (
+                <img
+                  src={clerkUser.imageUrl}
+                  alt=""
+                  className="w-16 h-16 rounded-full object-cover ring-2 ring-white/10 shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-2xl shrink-0">
+                  {(user?.name || clerkUser?.firstName)?.[0] || "?"}
+                </div>
+              )}
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  {user?.name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || "Your Name"}
+                </h2>
+                <p className="text-white/30 text-xs flex items-center gap-1 mt-1">
+                  <Mail className="w-3 h-3" />
+                  {user?.email || clerkUser?.emailAddresses?.[0]?.emailAddress || "No email"}
+                </p>
+                <span className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                  user?.role === "client"
+                    ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                    : user?.role === "admin"
+                    ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                    : "bg-green-500/10 text-green-400 border-green-500/20"
+                }`}>
+                  {user?.role}
+                </span>
+              </div>
             </div>
-          )}
+
+            {/* Edit / Save / Cancel buttons — top right */}
+            <div className="shrink-0 self-start">
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-white text-black text-xs font-semibold rounded-lg hover:bg-white/90 transition-all"
+                >
+                  <Edit2 className="w-3 h-3" /> Edit Profile
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCancel}
+                    className="px-3 py-2 bg-white/5 border border-white/10 text-white/60 text-xs font-medium rounded-lg hover:bg-white/10 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-white text-black text-xs font-semibold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-all"
+                  >
+                    <Check className="w-3 h-3" />
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats — sits below the ripple section, plain bg */}
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/5">
+            {[
+              { label: "Reviews", value: user?.totalReviews || 0 },
+              { label: "Rating", value: user?.averageRating > 0 ? `${user.averageRating}★` : "—" },
+              {
+                label: user?.role === "developer" ? "Earned" : "Spent",
+                value: `$${user?.totalEarned || user?.totalSpent || 0}`
+              },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-white/3 border border-white/5 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-white">{value}</p>
+                <p className="text-white/30 text-xs mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Profile Card */}
-      <div className="bg-[#111111] border border-white/8 rounded-xl p-6">
-
-        {/* Avatar + Info */}
-        <div className="flex items-center gap-4 mb-6">
-          {clerkUser?.imageUrl ? (
-            <img src={clerkUser.imageUrl} alt="" className="w-16 h-16 rounded-full object-cover ring-2 ring-white/10" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-2xl">
-              {(user?.name || clerkUser?.firstName)?.[0] || "?"}
-            </div>
-          )}
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              {user?.name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || "Your Name"}
-            </h2>
-            <p className="text-white/30 text-xs flex items-center gap-1 mt-1">
-              <Mail className="w-3 h-3" />
-              {user?.email || clerkUser?.emailAddresses?.[0]?.emailAddress || "No email"}
-            </p>
-            <span className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-              user?.role === "client"
-                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                : user?.role === "admin"
-                ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                : "bg-green-500/10 text-green-400 border-green-500/20"
-            }`}>
-              {user?.role}
-            </span>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/5">
-          {[
-            { label: "Reviews", value: user?.totalReviews || 0 },
-            { label: "Rating", value: user?.averageRating > 0 ? `${user.averageRating}★` : "—" },
-            {
-              label: user?.role === "developer" ? "Earned" : "Spent",
-              value: `$${user?.totalEarned || user?.totalSpent || 0}`
-            },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-white/3 border border-white/5 rounded-lg p-3 text-center">
-              <p className="text-xl font-bold text-white">{value}</p>
-              <p className="text-white/30 text-xs mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
-
-      </div>{/* end profile card */}
 
       {/* Editable Fields */}
       <div className="bg-[#111111] border border-white/8 rounded-xl p-6 space-y-5">
@@ -351,8 +360,7 @@ export default function ProfileClient({ initialUser }) {
           </div>
         )}
 
-      </div>{/* end editable fields */}
-
+      </div>
     </div>
   );
 }
