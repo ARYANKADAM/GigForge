@@ -21,16 +21,8 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const bottomRef = useRef(null)
   const typingTimeout = useRef(null)
   const socket = useRef(null)
-  const messagesRef = useRef(null)
 
   useEffect(() => { setMounted(true) }, [])
-
-  // disable body scroll when chat is open (mobile)
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, []);
 
   useEffect(() => {
     socket.current = getSocket()
@@ -98,10 +90,13 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    // Use dvh so the container shrinks when the mobile keyboard opens
-    <div className="flex flex-col bg-[#0a0a0a] text-white" style={{ height: '100dvh' }}>
-
-      {/* Chat Header */}
+    // 100dvh shrinks when the virtual keyboard opens on mobile
+    // flex-col so header + messages + input stack vertically
+    <div
+      className="flex flex-col bg-[#0a0a0a] text-white w-full"
+      style={{ height: '100dvh' }}
+    >
+      {/* Chat Header — fixed height, never scrolls */}
       <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d] shrink-0">
         <Link href={`/profile/${otherUser?.clerkId}`} className="shrink-0">
           {otherUser?.imageUrl ? (
@@ -126,8 +121,11 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </div>
       </div>
 
-      {/* Messages — flex-1 so it fills space between header and input */}
-      <div ref={messagesRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+      {/* Messages — flex-1 fills remaining space, THIS is the only scrollable element */}
+      <div
+        className="flex-1 min-h-0 px-5 py-4 space-y-2"
+        style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+      >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
@@ -149,7 +147,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
 
           return (
             <div key={msg._id || `msg-${index}`} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-
               {!isOwn && (
                 <div className="w-6 shrink-0">
                   {showAvatar && (
@@ -195,7 +192,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — shrink-0 keeps it at the bottom, moves up with keyboard via dvh */}
+      {/* Input bar — shrink-0 so it never grows/shrinks, always at the bottom */}
       <form
         onSubmit={sendMessage}
         className="shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"

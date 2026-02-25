@@ -64,27 +64,20 @@
 }
 
 /* =============================================
-   MOBILE CHAT VIEWPORT FIX
-   Prevents the page from scrolling when the
-   virtual keyboard opens on iOS / Android.
-   The chat layout uses height: 100dvh so it
-   naturally shrinks to fit the visible area.
+   MOBILE KEYBOARD FIX
+   We do NOT set overflow:hidden on body as that
+   blocks inner scroll containers on Android.
+   Instead we only prevent the body from growing
+   taller than the screen, and let 100dvh inside
+   ChatWindow handle the keyboard resize naturally.
    ============================================= */
-html,
-body {
-  /* Prevent the whole page from being scrollable on mobile */
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Ensure the Next.js root wrapper fills the full height too */
-#__next {
+html {
   height: 100%;
 }
 
-/* Prevent iOS Safari's rubber-band overscroll on the body */
 body {
-  overscroll-behavior: none;
+  /* Prevents iOS rubber-band bounce on the page level */
+  overscroll-behavior-y: none;
 }
 
 @theme inline {
@@ -100,7 +93,6 @@ body {
 
 /* ===== CLERK DARK THEME ===== */
 
-/* Force transparent background on Clerk wrappers */
 .cl-rootBox,
 .cl-signIn-root,
 .cl-signUp-root,
@@ -111,7 +103,6 @@ body {
   background: transparent !important;
 }
 
-/* Main card */
 .cl-card {
   background-color: #111111 !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
@@ -119,7 +110,6 @@ body {
   border-radius: 16px !important;
 }
 
-/* Card footer — fixes the light gray bottom section */
 .cl-card__footer,
 .cl-footer,
 .cl-cardBox {
@@ -128,7 +118,6 @@ body {
   border-top: 1px solid rgba(255,255,255,0.05) !important;
 }
 
-/* All text */
 .cl-headerTitle,
 .cl-headerSubtitle,
 .cl-formFieldLabel,
@@ -140,12 +129,10 @@ body {
   color: rgba(255,255,255,0.8) !important;
 }
 
-/* Optional label */
 .cl-formFieldLabelRow__optional {
   color: rgba(255,255,255,0.3) !important;
 }
 
-/* Inputs */
 .cl-formFieldInput {
   background-color: rgba(255,255,255,0.05) !important;
   border-color: rgba(255,255,255,0.1) !important;
@@ -157,7 +144,6 @@ body {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.05) !important;
 }
 
-/* Primary button */
 .cl-formButtonPrimary {
   background-color: white !important;
   color: black !important;
@@ -168,12 +154,10 @@ body {
   background-color: rgba(255,255,255,0.9) !important;
 }
 
-/* Footer links */
 .cl-footerActionLink {
   color: #93c5fd !important;
 }
 
-/* Divider */
 .cl-dividerLine {
   background-color: rgba(255,255,255,0.08) !important;
 }
@@ -183,7 +167,6 @@ body {
   color: rgba(255,255,255,0.3) !important;
 }
 
-/* Social buttons */
 .cl-socialButtonsBlockButton,
 .cl-socialButtonsIconButton {
   background-color: rgba(255,255,255,0.05) !important;
@@ -196,25 +179,21 @@ body {
   background-color: rgba(255,255,255,0.1) !important;
 }
 
-/* Fix GitHub icon visibility */
 .cl-socialButtonsIconButton {
   filter: invert(1) !important;
 }
 
-/* Secured by Clerk footer */
 .cl-powerButton,
 .cl-footerPages {
   background: #111111 !important;
 }
 
-/* Internal Clerk elements */
 .cl-internal-b3fm6y {
   background-color: #111111 !important;
 }
 
 /* custom scrollbar: hide by default, show on hover */
 .main-scroll {
-  /* firefox */
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
