@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getSocket } from '@/lib/socket-client'
 import { Send } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 function formatTime(date) {
   return new Date(date).toLocaleTimeString([], {
@@ -21,6 +22,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const bottomRef = useRef(null)
   const typingTimeout = useRef(null)
   const socket = useRef(null)
+  const router = useRouter()
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -108,11 +110,24 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           )}
         </Link>
         <div className="flex-1 min-w-0">
-          <Link href={`/profile/${otherUser?.clerkId}`}>
-            <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
-              {otherUser?.name || 'User'}
-            </p>
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="md:hidden inline-flex items-center justify-center w-8 h-8 rounded-md text-white/80 hover:bg-white/5"
+              aria-label="Back"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M19 12H5" />
+                <path d="M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <Link href={`/profile/${otherUser?.clerkId}`} className="min-w-0">
+              <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
+                {otherUser?.name || 'User'}
+              </p>
+            </Link>
+          </div>
           {isTyping ? (
             <p className="text-xs text-green-400">typing...</p>
           ) : (
@@ -195,7 +210,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       {/* Input bar — shrink-0 so it never grows/shrinks, always at the bottom */}
       <form
         onSubmit={sendMessage}
-          className="shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
+        className="shrink-0 sticky bottom-0 z-20 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
       >
         <input
           type="text"

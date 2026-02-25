@@ -135,12 +135,7 @@ export default async function ChatRoomPage({ params }) {
 
       {/* Chat Window */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* back button for mobile */}
-        <div className="md:hidden px-4 py-3 border-b border-white/5 bg-[#0d0d0d]">
-          <Link href="/messages" className="inline-flex items-center gap-2 text-sm text-white hover:underline">
-            ← Back
-          </Link>
-        </div>
+        {/* mobile back handled inside ChatWindow header */}
         <ChatWindow
           roomId={roomId}
           currentUserId={userId}
