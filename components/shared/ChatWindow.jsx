@@ -195,7 +195,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       {/* Input bar — shrink-0 so it never grows/shrinks, always at the bottom */}
       <form
         onSubmit={sendMessage}
-        className="shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
+          className="shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
       >
         <input
           type="text"
