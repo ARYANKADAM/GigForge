@@ -21,6 +21,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const bottomRef = useRef(null)
   const typingTimeout = useRef(null)
   const socket = useRef(null)
+  const messagesRef = useRef(null)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -97,8 +98,8 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    <div className="relative flex flex-col h-full bg-[#0a0a0a] text-white">
-      <div className="relative flex flex-col h-full">
+    // Use dvh so the container shrinks when the mobile keyboard opens
+    <div className="flex flex-col bg-[#0a0a0a] text-white" style={{ height: '100dvh' }}>
 
       {/* Chat Header */}
       <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d] shrink-0">
@@ -125,8 +126,8 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 pb-28">
+      {/* Messages — flex-1 so it fills space between header and input */}
+      <div ref={messagesRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
@@ -141,7 +142,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           </div>
         )}
 
-        {/* Group messages by date */}
         {messages.map((msg, index) => {
           const isOwn = msg.senderId === currentUserId
           const prevMsg = messages[index - 1]
@@ -150,7 +150,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           return (
             <div key={msg._id || `msg-${index}`} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
 
-              {/* Avatar for other user */}
               {!isOwn && (
                 <div className="w-6 shrink-0">
                   {showAvatar && (
@@ -196,8 +195,11 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <form onSubmit={sendMessage} className="fixed bottom-0 left-0 right-0 z-20 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]">
+      {/* Input — shrink-0 keeps it at the bottom, moves up with keyboard via dvh */}
+      <form
+        onSubmit={sendMessage}
+        className="shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]"
+      >
         <input
           type="text"
           value={input}
@@ -215,6 +217,5 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </button>
       </form>
     </div>
-  </div>
   )
 }

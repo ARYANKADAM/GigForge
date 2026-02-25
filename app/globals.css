@@ -63,6 +63,30 @@
   body { @apply bg-background text-foreground; }
 }
 
+/* =============================================
+   MOBILE CHAT VIEWPORT FIX
+   Prevents the page from scrolling when the
+   virtual keyboard opens on iOS / Android.
+   The chat layout uses height: 100dvh so it
+   naturally shrinks to fit the visible area.
+   ============================================= */
+html,
+body {
+  /* Prevent the whole page from being scrollable on mobile */
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Ensure the Next.js root wrapper fills the full height too */
+#__next {
+  height: 100%;
+}
+
+/* Prevent iOS Safari's rubber-band overscroll on the body */
+body {
+  overscroll-behavior: none;
+}
+
 @theme inline {
   --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
   var(--delay, 0ms);
