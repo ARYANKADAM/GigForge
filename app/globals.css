@@ -78,6 +78,7 @@ html {
 body {
   /* Prevents iOS rubber-band bounce on the page level */
   overscroll-behavior-y: none;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 @theme inline {
@@ -223,3 +224,4 @@ select optgroup {
   color: rgba(255,255,255,0.4) !important;
   font-size: 11px !important;
 }
+

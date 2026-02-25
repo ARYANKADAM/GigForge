@@ -21,6 +21,9 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning className="dark">
+        <head>
+          <link href="https://api.fontshare.com/v2/css?f[]=space-grotesk@400&display=swap" rel="stylesheet"></link>
+        </head>
         <body className="relative">
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <SocketListener />
