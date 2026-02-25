@@ -47,7 +47,7 @@ export default async function MessagesIndexPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-65px)] flex flex-col md:flex-row">
+    <div className="flex flex-1 flex-col md:flex-row">
 
       {/* Contacts Sidebar */}
       <div className="w-full md:w-80 md:border-r md:border-white/5 flex flex-col bg-[#0d0d0d]">

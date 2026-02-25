@@ -90,7 +90,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    <div className="relative flex flex-col h-full">
+    <div className="relative flex flex-col h-full min-h-screen bg-[#0a0a0a] text-white">
       <div className="relative flex flex-col h-full">
 
       {/* Chat Header */}
@@ -119,7 +119,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 pb-28">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
@@ -166,7 +166,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
                 }`}>
                   {msg.content}
                 </div>
-                <span className="text-xs text-white/15 px-1">
+                <span className="text-xs text-white/50 px-1">
                   {mounted ? formatTime(msg.createdAt) : ''}
                 </span>
               </div>
@@ -190,7 +190,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       </div>
 
       {/* Input */}
-      <form onSubmit={sendMessage} className="flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d] shrink-0">
+      <form onSubmit={sendMessage} className="fixed bottom-0 left-0 right-0 z-20 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]">
         <input
           type="text"
           value={input}
