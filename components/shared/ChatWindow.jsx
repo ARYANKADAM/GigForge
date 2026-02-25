@@ -90,7 +90,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
-    <div className="relative flex flex-col h-full min-h-screen bg-[#0a0a0a] text-white">
+    <div className="relative flex flex-col h-full bg-[#0a0a0a] text-white">
       <div className="relative flex flex-col h-full">
 
       {/* Chat Header */}
