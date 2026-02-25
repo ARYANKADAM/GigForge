@@ -121,12 +121,6 @@ export default function DashboardPage() {
                   <Search className="w-4 h-4" /> Browse Projects
                 </Link>
               )}
-              <Link
-                href="/messages"
-                className="flex items-center gap-2 bg-white/5 border border-white/10 text-white/70 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-all"
-              >
-                <MessageCircle className="w-4 h-4" /> Messages
-              </Link>
             </div>
           </div>
 

@@ -70,10 +70,10 @@ export default async function ChatRoomPage({ params }) {
   );
 
   return (
-    <div className="h-screen flex">
+    <div className="h-screen flex flex-col md:flex-row">
 
       {/* Contacts Sidebar */}
-      <div className="w-80 border-r border-white/5 flex flex-col bg-[#0d0d0d] shrink-0">
+      <div className="hidden md:flex md:w-80 md:border-r md:border-white/5 flex-col bg-[#0d0d0d] shrink-0">
 
        {/* Header */}
       <div className="px-4 py-4 border-b border-white/5">
@@ -95,7 +95,7 @@ export default async function ChatRoomPage({ params }) {
             const isActive = r.roomId === roomId;
             return (
               <Link key={r.roomId} href={`/messages/${r.roomId}`}>
-                <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors border-b border-white/3 cursor-pointer group ${
+                <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors border-b border-white/10 cursor-pointer group ${
                   isActive ? "bg-white/8" : "hover:bg-white/5"
                 }`}>
                   <div className="relative shrink-0">
@@ -135,6 +135,12 @@ export default async function ChatRoomPage({ params }) {
 
       {/* Chat Window */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* back button for mobile */}
+        <div className="md:hidden px-4 py-3 border-b border-white/5 bg-[#0d0d0d]">
+          <Link href="/messages" className="inline-flex items-center gap-2 text-sm text-white hover:underline">
+            ← Back
+          </Link>
+        </div>
         <ChatWindow
           roomId={roomId}
           currentUserId={userId}

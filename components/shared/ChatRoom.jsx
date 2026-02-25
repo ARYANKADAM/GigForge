@@ -70,7 +70,7 @@ export default function ChatRoom({ roomId, currentUserId }) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-10rem)] bg-[#0d0d0d] rounded-xl border border-white/10 overflow-hidden">
       <div className="px-5 py-4 border-b border-slate-200 bg-slate-50">
         <h2 className="font-semibold text-slate-900">Project Chat</h2>
         <span className={`text-xs ${connected ? "text-green-500" : "text-slate-400"}`}>

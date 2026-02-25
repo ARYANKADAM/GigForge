@@ -47,10 +47,10 @@ export default async function MessagesIndexPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-65px)] flex">
+    <div className="h-[calc(100vh-65px)] flex flex-col md:flex-row">
 
       {/* Contacts Sidebar */}
-      <div className="w-80 border-r border-white/5 flex flex-col bg-[#0d0d0d]">
+      <div className="w-full md:w-80 md:border-r md:border-white/5 flex flex-col bg-[#0d0d0d]">
 
        {/* Header */}
 <div className="px-4 py-4 border-b border-white/5">
@@ -89,7 +89,7 @@ export default async function MessagesIndexPage() {
           ) : (
             rooms.filter(r => r.roomId).map((r) => (
               <Link key={r.roomId} href={`/messages/${r.roomId}`}>
-                <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors border-b border-white/3 cursor-pointer group">
+                <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors border-b border-white/10 cursor-pointer group">
                   {/* Avatar */}
                   <div className="relative shrink-0">
                     {r.other?.imageUrl ? (
@@ -127,9 +127,9 @@ export default async function MessagesIndexPage() {
         </div>
       </div>
 
-      {/* Empty state — when no room is selected */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#0a0a0a]">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center mb-4">
+      {/* Empty state — when no room is selected (hidden on small) */}
+      <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-[#0a0a0a]">
+        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
           <MessageSquare className="w-7 h-7 text-white/20" />
         </div>
         <p className="text-white/30 text-sm font-medium">Select a conversation</p>
