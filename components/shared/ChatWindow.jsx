@@ -24,6 +24,13 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
 
   useEffect(() => { setMounted(true) }, [])
 
+  // disable body scroll when chat is open (mobile)
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   useEffect(() => {
     socket.current = getSocket()
     socket.current.emit('join_room', roomId)
