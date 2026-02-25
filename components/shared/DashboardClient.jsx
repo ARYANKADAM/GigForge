@@ -75,7 +75,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       
       {/* ✅ Hero section with ripple background */}
-      <div className="relative rounded-2xl overflow-hidden border border-white/5">
+      {/* stretch slightly beyond parent padding on small screens */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/5 -mx-4 md:mx-0">
       
         {/* Ripple grid — only covers this section */}
         
@@ -118,7 +119,7 @@ export default function DashboardPage() {
                   href="/developer/projects"
                   className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/90 transition-all"
                 >
-                  <Search className="w-4 h-4" /> Browse Projects
+                  <Search className="w-4 h-4" /> Browse 
                 </Link>
               )}
             </div>
