@@ -23,12 +23,12 @@ function RippleBg() {
   const [clickedCell, setClickedCell] = useState(null)
   const [rippleKey, setRippleKey] = useState(0)
 
-  // Auto-fire a random ripple every ~4 seconds
   useEffect(() => {
     const fire = () => {
-      const row = Math.floor(Math.random() * ROWS)
-      const col = Math.floor(Math.random() * COLS)
-      setClickedCell({ row, col })
+      setClickedCell({
+        row: Math.floor(Math.random() * ROWS),
+        col: Math.floor(Math.random() * COLS),
+      })
       setRippleKey(k => k + 1)
     }
     fire()
@@ -36,21 +36,16 @@ function RippleBg() {
     return () => clearInterval(id)
   }, [])
 
-  const cells = useMemo(
-    () => Array.from({ length: ROWS * COLS }, (_, idx) => idx),
-    []
-  )
+  const cells = useMemo(() => Array.from({ length: ROWS * COLS }, (_, i) => i), [])
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Radial fade so edges dissolve into the bg */}
       <div
         className="absolute inset-0 z-10"
         style={{
           background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 15%, #0a0a0a 72%)',
         }}
       />
-      {/* Centered grid */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div
           key={`grid-${rippleKey}`}
@@ -68,9 +63,6 @@ function RippleBg() {
             const distance = clickedCell
               ? Math.hypot(clickedCell.row - rowIdx, clickedCell.col - colIdx)
               : 0
-            const delay = clickedCell ? Math.max(0, distance * 45) : 0
-            const duration = 200 + distance * 75
-
             return (
               <div
                 key={idx}
@@ -82,8 +74,8 @@ function RippleBg() {
                   backgroundColor: '#0a0a0a',
                   borderColor: '#1e1e1e',
                   ...(clickedCell && {
-                    '--delay': `${delay}ms`,
-                    '--duration': `${duration}ms`,
+                    '--delay': `${Math.max(0, distance * 45)}ms`,
+                    '--duration': `${200 + distance * 75}ms`,
                   }),
                 }}
               />
@@ -97,6 +89,8 @@ function RippleBg() {
 
 // ─── Chat Window ─────────────────────────────────────────────────────────────
 
+const INPUT_BAR_HEIGHT = 64 // px — matches py-3 + input height
+
 export default function ChatWindow({ roomId, currentUserId, initialMessages, otherUser }) {
   const [messages, setMessages] = useState(initialMessages || [])
   const [input, setInput] = useState('')
@@ -106,8 +100,31 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   const bottomRef = useRef(null)
   const typingTimeout = useRef(null)
   const socket = useRef(null)
+  const containerRef = useRef(null)
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Keep the container height locked to the visual viewport
+  // This is what prevents the layout shifting when the browser URL bar hides/shows
+  useEffect(() => {
+    const setHeight = () => {
+      const vh = window.visualViewport?.height ?? window.innerHeight
+      if (containerRef.current) {
+        containerRef.current.style.height = `${vh}px`
+      }
+    }
+
+    setHeight()
+
+    // visualViewport fires when keyboard opens/closes AND when URL bar hides
+    window.visualViewport?.addEventListener('resize', setHeight)
+    window.addEventListener('resize', setHeight)
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', setHeight)
+      window.removeEventListener('resize', setHeight)
+    }
+  }, [])
 
   useEffect(() => {
     socket.current = getSocket()
@@ -165,16 +182,17 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   }
 
   return (
+    // ref + inline height locked to visualViewport — never shifts with URL bar
     <div
+      ref={containerRef}
       className="relative flex flex-col bg-[#0a0a0a] text-white w-full overflow-hidden"
-      style={{ height: '100dvh' }}
+      style={{ height: '100dvh' }} // fallback, overridden by JS above
     >
-      {/* Ripple background */}
+      {/* Ripple bg */}
       <RippleBg />
 
       {/* Header */}
       <div className="relative z-10 flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
-        {/* Back — mobile only */}
         <Link
           href="/messages"
           className="md:hidden w-8 h-8 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center shrink-0 active:bg-white/10 transition"
@@ -207,10 +225,15 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         </div>
       </div>
 
-      {/* Messages — only this scrolls */}
+      {/* Messages — scrollable, padded so last message is never behind input bar */}
       <div
         className="relative z-10 flex-1 min-h-0 px-4 py-4 space-y-2"
-        style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+        style={{
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          // Extra bottom padding so last message isn't hidden behind input bar
+          paddingBottom: `${INPUT_BAR_HEIGHT + 16}px`,
+        }}
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -241,7 +264,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
                   )}
                 </div>
               )}
-
               <div className={cn('flex flex-col gap-0.5 max-w-[78%] sm:max-w-xs lg:max-w-sm', isOwn ? 'items-end' : 'items-start')}>
                 <div className={cn(
                   'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
@@ -259,7 +281,6 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           )
         })}
 
-        {/* Typing indicator */}
         {isTyping && (
           <div className="flex gap-2 items-end">
             <div className="w-6 h-6 rounded-full bg-white/10 shrink-0" />
@@ -274,10 +295,11 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar — pinned, rises with keyboard */}
+      {/* Input bar — absolute to the container so it never scrolls with messages */}
       <form
         onSubmit={sendMessage}
-        className="relative z-10 shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md"
+        className="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0a0a0a]/90 backdrop-blur-md"
+        style={{ height: INPUT_BAR_HEIGHT }}
       >
         <input
           type="text"
