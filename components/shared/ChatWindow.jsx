@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { getSocket } from '@/lib/socket-client'
 import { Send } from 'lucide-react'
 import Link from 'next/link'
@@ -19,59 +19,11 @@ const ROWS = 18
 const COLS = 22
 const CELL = 52
 
-const DivGrid = ({ clickedCell, rippleKey }) => {
-  const cells = useMemo(
-    () => Array.from({ length: ROWS * COLS }, (_, idx) => idx),
-    []
-  )
-
-  return (
-    <div
-      key={`grid-${rippleKey}`}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${COLS}, ${CELL}px)`,
-        gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
-        width: COLS * CELL,
-        height: ROWS * CELL,
-      }}
-    >
-      {cells.map((idx) => {
-        const rowIdx = Math.floor(idx / COLS)
-        const colIdx = idx % COLS
-        const distance = clickedCell
-          ? Math.hypot(clickedCell.row - rowIdx, clickedCell.col - colIdx)
-          : 0
-        const delay = clickedCell ? Math.max(0, distance * 45) : 0
-        const duration = 200 + distance * 75
-
-        return (
-          <div
-            key={idx}
-            className={cn(
-              'border-[0.5px] opacity-30',
-              clickedCell && 'animate-cell-ripple [animation-fill-mode:none]'
-            )}
-            style={{
-              backgroundColor: '#0a0a0a',
-              borderColor: '#1e1e1e',
-              ...(clickedCell && {
-                '--delay': `${delay}ms`,
-                '--duration': `${duration}ms`,
-              }),
-            }}
-          />
-        )
-      })}
-    </div>
-  )
-}
-
-const ChatRippleBg = () => {
+function RippleBg() {
   const [clickedCell, setClickedCell] = useState(null)
   const [rippleKey, setRippleKey] = useState(0)
 
-  // Auto-fire a random ripple every 3–6 seconds
+  // Auto-fire a random ripple every ~4 seconds
   useEffect(() => {
     const fire = () => {
       const row = Math.floor(Math.random() * ROWS)
@@ -79,24 +31,65 @@ const ChatRippleBg = () => {
       setClickedCell({ row, col })
       setRippleKey(k => k + 1)
     }
-
-    fire() // fire once on mount
-    const id = setInterval(fire, 3500 + Math.random() * 2500)
+    fire()
+    const id = setInterval(fire, 3500 + Math.random() * 2000)
     return () => clearInterval(id)
   }, [])
 
+  const cells = useMemo(
+    () => Array.from({ length: ROWS * COLS }, (_, idx) => idx),
+    []
+  )
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Radial fade so edges dissolve */}
+      {/* Radial fade so edges dissolve into the bg */}
       <div
         className="absolute inset-0 z-10"
         style={{
-          background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 20%, #0a0a0a 75%)',
+          background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 15%, #0a0a0a 72%)',
         }}
       />
-      {/* Center the grid */}
+      {/* Centered grid */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <DivGrid clickedCell={clickedCell} rippleKey={rippleKey} />
+        <div
+          key={`grid-${rippleKey}`}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${COLS}, ${CELL}px)`,
+            gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
+            width: COLS * CELL,
+            height: ROWS * CELL,
+          }}
+        >
+          {cells.map((idx) => {
+            const rowIdx = Math.floor(idx / COLS)
+            const colIdx = idx % COLS
+            const distance = clickedCell
+              ? Math.hypot(clickedCell.row - rowIdx, clickedCell.col - colIdx)
+              : 0
+            const delay = clickedCell ? Math.max(0, distance * 45) : 0
+            const duration = 200 + distance * 75
+
+            return (
+              <div
+                key={idx}
+                className={cn(
+                  'border-[0.5px] opacity-30',
+                  clickedCell && 'animate-cell-ripple [animation-fill-mode:none]'
+                )}
+                style={{
+                  backgroundColor: '#0a0a0a',
+                  borderColor: '#1e1e1e',
+                  ...(clickedCell && {
+                    '--delay': `${delay}ms`,
+                    '--duration': `${duration}ms`,
+                  }),
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -119,22 +112,15 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
   useEffect(() => {
     socket.current = getSocket()
     socket.current.emit('join_room', roomId)
-
     socket.current.on('receive_message', (msg) => {
-      setMessages(prev => {
-        if (prev.some(m => m._id === msg._id)) return prev
-        return [...prev, msg]
-      })
+      setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg])
     })
-
     socket.current.on('user_typing', ({ userId }) => {
       if (userId !== currentUserId) setIsTyping(true)
     })
-
     socket.current.on('user_stop_typing', ({ userId }) => {
       if (userId !== currentUserId) setIsTyping(false)
     })
-
     return () => {
       socket.current.emit('leave_room', roomId)
       socket.current.off('receive_message')
@@ -168,10 +154,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setMessages(prev => {
-        if (prev.some(m => m._id === data._id)) return prev
-        return [...prev, data]
-      })
+      setMessages(prev => prev.some(m => m._id === data._id) ? prev : [...prev, data])
       socket.current?.emit('send_message', { ...data, roomId })
       setInput('')
     } catch (err) {
@@ -183,50 +166,59 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
 
   return (
     <div
-      className="relative flex flex-col bg-[#0a0a0a] text-white w-full"
+      className="relative flex flex-col bg-[#0a0a0a] text-white w-full overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* Ripple background — sits behind everything */}
-      <ChatRippleBg />
+      {/* Ripple background */}
+      <RippleBg />
 
-      {/* Chat Header */}
-      <div className="relative z-10 flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#0d0d0d]/80 backdrop-blur-sm shrink-0">
+      {/* Header */}
+      <div className="relative z-10 flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
+        {/* Back — mobile only */}
+        <Link
+          href="/messages"
+          className="md:hidden w-8 h-8 rounded-lg bg-white/5 border border-white/8 flex items-center justify-center shrink-0 active:bg-white/10 transition"
+        >
+          <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+
         <Link href={`/profile/${otherUser?.clerkId}`} className="shrink-0">
           {otherUser?.imageUrl ? (
             <img src={otherUser.imageUrl} alt="" className="w-9 h-9 rounded-full object-cover hover:opacity-80 transition" />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/60 text-sm hover:opacity-80 transition">
+            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/60 text-sm">
               {otherUser?.name?.[0] || '?'}
             </div>
           )}
         </Link>
+
         <div className="flex-1 min-w-0">
           <Link href={`/profile/${otherUser?.clerkId}`}>
             <p className="font-semibold text-white text-sm hover:text-white/80 transition truncate">
               {otherUser?.name || 'User'}
             </p>
           </Link>
-          {isTyping ? (
-            <p className="text-xs text-green-400">typing...</p>
-          ) : (
-            <p className="text-xs text-white/25">Active now</p>
-          )}
+          {isTyping
+            ? <p className="text-xs text-green-400">typing...</p>
+            : <p className="text-xs text-white/25">Active now</p>
+          }
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages — only this scrolls */}
       <div
-        className="relative z-10 flex-1 min-h-0 px-5 py-4 space-y-2"
+        className="relative z-10 flex-1 min-h-0 px-4 py-4 space-y-2"
         style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-              {otherUser?.imageUrl ? (
-                <img src={otherUser.imageUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
-              ) : (
-                <span className="text-white/30 text-lg font-bold">{otherUser?.name?.[0] || '?'}</span>
-              )}
+              {otherUser?.imageUrl
+                ? <img src={otherUser.imageUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+                : <span className="text-white/30 text-lg font-bold">{otherUser?.name?.[0] || '?'}</span>
+              }
             </div>
             <p className="text-white/30 text-sm font-medium">{otherUser?.name || 'User'}</p>
             <p className="text-white/15 text-xs mt-1">Send a message to start the conversation</p>
@@ -239,30 +231,27 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           const showAvatar = !isOwn && (!prevMsg || prevMsg.senderId !== msg.senderId)
 
           return (
-            <div key={msg._id || `msg-${index}`} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+            <div key={msg._id || `msg-${index}`} className={cn('flex gap-2 items-end', isOwn ? 'flex-row-reverse' : 'flex-row')}>
               {!isOwn && (
                 <div className="w-6 shrink-0">
                   {showAvatar && (
-                    otherUser?.imageUrl ? (
-                      <img src={otherUser.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-xs font-bold">
-                        {otherUser?.name?.[0] || '?'}
-                      </div>
-                    )
+                    otherUser?.imageUrl
+                      ? <img src={otherUser.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                      : <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-xs font-bold">{otherUser?.name?.[0] || '?'}</div>
                   )}
                 </div>
               )}
 
-              <div className={`flex flex-col gap-0.5 max-w-xs lg:max-w-sm ${isOwn ? 'items-end' : 'items-start'}`}>
-                <div className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+              <div className={cn('flex flex-col gap-0.5 max-w-[78%] sm:max-w-xs lg:max-w-sm', isOwn ? 'items-end' : 'items-start')}>
+                <div className={cn(
+                  'px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed',
                   isOwn
                     ? 'bg-white text-black rounded-br-sm'
                     : 'bg-[#1a1a1a]/90 backdrop-blur-sm text-white/80 border border-white/5 rounded-bl-sm'
-                }`}>
+                )}>
                   {msg.content}
                 </div>
-                <span className="text-xs text-white/50 px-1">
+                <span className="text-xs text-white/40 px-1">
                   {mounted ? formatTime(msg.createdAt) : ''}
                 </span>
               </div>
@@ -285,10 +274,10 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar */}
+      {/* Input bar — pinned, rises with keyboard */}
       <form
         onSubmit={sendMessage}
-        className="relative z-10 shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0d0d0d]/80 backdrop-blur-sm"
+        className="relative z-10 shrink-0 flex items-center gap-2 px-4 py-3 border-t border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md"
       >
         <input
           type="text"
@@ -296,7 +285,7 @@ export default function ChatWindow({ roomId, currentUserId, initialMessages, oth
           onChange={handleInputChange}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e)}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
+          className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
         />
         <button
           type="submit"

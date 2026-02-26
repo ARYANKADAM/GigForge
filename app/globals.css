@@ -64,36 +64,45 @@
 }
 
 /* =============================================
-   MOBILE KEYBOARD FIX
-   We do NOT set overflow:hidden on body as that
-   blocks inner scroll containers on Android.
-   Instead we only prevent the body from growing
-   taller than the screen, and let 100dvh inside
-   ChatWindow handle the keyboard resize naturally.
+   BASE — dark bg everywhere, font, no bounce
    ============================================= */
 html {
   height: 100%;
+  /* Force dark bg so no white flash on iOS/Android overscroll */
+  background-color: #0a0a0a;
 }
 
 body {
-  /* Prevents iOS rubber-band bounce on the page level */
-  overscroll-behavior-y: none;
   font-family: 'Space Grotesk', sans-serif;
+  background-color: #0a0a0a;
+  min-height: 100dvh;
+  /* Kills rubber-band white flash on iOS and Android */
+  overscroll-behavior-y: none;
 }
 
+/* Next.js root wrapper — must also be dark */
+#__next {
+  background-color: #0a0a0a;
+  min-height: 100dvh;
+}
+
+/* =============================================
+   RIPPLE ANIMATION (used by BackgroundRippleEffect)
+   ============================================= */
 @theme inline {
   --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
   var(--delay, 0ms);
 
   @keyframes cell-ripple {
-    0% { opacity: 0.4; }
-    50% { opacity: 0.8; }
+    0%   { opacity: 0.4; }
+    50%  { opacity: 0.8; }
     100% { opacity: 0.4; }
   }
 }
 
-/* ===== CLERK DARK THEME ===== */
-
+/* =============================================
+   CLERK DARK THEME
+   ============================================= */
 .cl-rootBox,
 .cl-signIn-root,
 .cl-signUp-root,
@@ -193,7 +202,9 @@ body {
   background-color: #111111 !important;
 }
 
-/* custom scrollbar: hide by default, show on hover */
+/* =============================================
+   CUSTOM SCROLLBAR — hidden until hover
+   ============================================= */
 .main-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.3) transparent;
@@ -213,7 +224,9 @@ body {
   background: transparent;
 }
 
-/* Dark select dropdown options */
+/* =============================================
+   DARK SELECT DROPDOWNS
+   ============================================= */
 select option {
   background-color: #111111 !important;
   color: white !important;
@@ -224,4 +237,3 @@ select optgroup {
   color: rgba(255,255,255,0.4) !important;
   font-size: 11px !important;
 }
-

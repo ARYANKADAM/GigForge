@@ -13,7 +13,6 @@ export default async function MessagesIndexPage() {
   if (!userId) return <div className="text-center py-16">Unauthorized</div>;
 
   await connectDB();
-  // clear any unread message notifications since user is viewing messages
   try {
     await Notification.updateMany({ userId, type: "message", isRead: false }, { isRead: true });
   } catch (e) {
@@ -47,23 +46,24 @@ export default async function MessagesIndexPage() {
   );
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col md:flex-row">
+    // min-h-dvh + bg ensures full dark coverage on all screen sizes including mobile
+    <div className="min-h-dvh bg-[#0a0a0a] flex flex-col md:flex-row">
 
       {/* Contacts Sidebar */}
-      <div className="w-full md:w-80 md:border-r md:border-white/5 flex flex-col bg-[#0d0d0d]">
+      <div className="w-full md:w-80 md:border-r md:border-white/5 flex flex-col bg-[#0d0d0d] min-h-dvh">
 
-       {/* Header */}
-<div className="px-4 py-4 border-b border-white/5">
-  <div className="flex items-center gap-2 mb-3">
-    <Link href="/dashboard">
-      <button className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all">
-        <svg className="w-3.5 h-3.5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-    </Link>
-    <h1 className="text-base font-bold text-white">Messages</h1>
-  </div>
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-white/5 shrink-0">
+          <div className="flex items-center gap-2 mb-3">
+            <Link href="/dashboard">
+              <button className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/8 flex items-center justify-center transition-all">
+                <svg className="w-3.5 h-3.5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            </Link>
+            <h1 className="text-base font-bold text-white">Messages</h1>
+          </div>
           {/* Search */}
           <div className="relative">
             <input
@@ -78,9 +78,9 @@ export default async function MessagesIndexPage() {
         </div>
 
         {/* Contacts List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-[#0d0d0d]">
           {rooms.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <div className="flex flex-col items-center justify-center h-64 text-center px-4">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-2">
                 <MessageSquare className="w-5 h-5 text-white/20" />
               </div>
@@ -89,13 +89,13 @@ export default async function MessagesIndexPage() {
           ) : (
             rooms.filter(r => r.roomId).map((r) => (
               <Link key={r.roomId} href={`/messages/${r.roomId}`}>
-                <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors border-b border-white/10 cursor-pointer group">
+                <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 active:bg-white/8 transition-colors border-b border-white/5 cursor-pointer group">
                   {/* Avatar */}
                   <div className="relative shrink-0">
                     {r.other?.imageUrl ? (
-                      <img src={r.other.imageUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={r.other.imageUrl} alt="" className="w-11 h-11 rounded-full object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/60 text-sm">
+                      <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center font-bold text-white/60 text-sm">
                         {r.other?.name?.[0] || "?"}
                       </div>
                     )}
@@ -105,7 +105,7 @@ export default async function MessagesIndexPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors truncate">
+                      <p className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors truncate">
                         {r.other?.name || "Unknown User"}
                       </p>
                       {r.lastMsg && (
@@ -115,7 +115,7 @@ export default async function MessagesIndexPage() {
                       )}
                     </div>
                     {r.lastMsg ? (
-                      <p className="text-xs text-white/25 truncate">{r.lastMsg.content}</p>
+                      <p className="text-xs text-white/30 truncate">{r.lastMsg.content}</p>
                     ) : (
                       <p className="text-xs text-white/15 italic">No messages yet</p>
                     )}
@@ -127,7 +127,7 @@ export default async function MessagesIndexPage() {
         </div>
       </div>
 
-      {/* Empty state — when no room is selected (hidden on small) */}
+      {/* Empty state — desktop only */}
       <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-[#0a0a0a]">
         <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
           <MessageSquare className="w-7 h-7 text-white/20" />

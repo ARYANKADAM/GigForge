@@ -70,10 +70,10 @@ export default async function ChatRoomPage({ params }) {
   );
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col md:flex-row">
 
       {/* Contacts Sidebar */}
-      <div className="hidden md:flex md:w-80 md:border-r md:border-white/5 flex-col bg-[#0d0d0d] shrink-0">
+      <div className="hidden md:flex md:w-80 md:border-r md:border-white/5 flex-col bg-[#0d0d0d] shrink-0 min-h-screen">
 
        {/* Header */}
       <div className="px-4 py-4 border-b border-white/5">
