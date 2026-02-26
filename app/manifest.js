@@ -5,13 +5,13 @@ export default function manifest() {
     description: "A marketplace to post projects, bid, collaborate, and get paid.",
     icons: [
       {
-        src: "/web-app-manifest-192x192.png",
+        src: "/icon1.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/web-app-manifest-512x512.png",
+        src: "/icon1.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

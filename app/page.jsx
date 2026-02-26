@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
+import InstallPWA from "@/components/shared/InstallPWA";
 
 export default function LandingPage() {
   return (
@@ -9,7 +10,7 @@ export default function LandingPage() {
       {/* Aceternity ripple grid */}
       <BackgroundRippleEffect rows={25} cols={45} cellSize={56} />
 
-      {/* Radial fade — grid fades into dark at bottom */}
+      {/* Radial fade */}
       <div
         className="absolute inset-0 pointer-events-none z-10"
         style={{
@@ -20,16 +21,18 @@ export default function LandingPage() {
 
       {/* Navbar */}
       <nav className="relative z-20 flex items-center justify-between px-9 py-6 max-w-8xl mx-auto w-full">
-       <a href="/" className="flex items-center gap-2">
-  <img 
-    src="/icon0.svg" 
-    alt="GigForge" 
-    className="w-6 h-6"
-    style={{ filter: "brightness(0) invert(1)" }}
-  />
-  <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
-</a>
+        <a href="/" className="flex items-center gap-2">
+          <img
+            src="/icon0.svg"
+            alt="GigForge"
+            className="w-6 h-6"
+            style={{ filter: "brightness(0) invert(1)" }}
+          />
+          <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
+        </a>
         <div className="flex items-center gap-3">
+          {/* Install button in navbar — only shows when installable */}
+          <InstallPWA variant="navbar" />
           <Link
             href="/sign-in"
             className="text-white/60 hover:text-white text-sm font-medium transition-colors px-4 py-2"
@@ -75,15 +78,13 @@ export default function LandingPage() {
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 mb-20">
+        <div className="flex flex-col sm:flex-row items-center gap-3 mb-8">
           <Link
             href="/sign-up"
             className="group bg-white text-black font-semibold px-8 py-3.5 rounded-xl hover:bg-white/90 transition-all text-sm flex items-center gap-2"
           >
             Start for free
-            <span className="group-hover:translate-x-0.5 transition-transform inline-block">
-              →
-            </span>
+            <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
           </Link>
           <Link
             href="/sign-in"
@@ -91,6 +92,11 @@ export default function LandingPage() {
           >
             Sign in to your account
           </Link>
+        </div>
+
+        {/* Install CTA — full variant with icon, shown below main CTAs */}
+        <div className="mb-20">
+          <InstallPWA variant="hero" />
         </div>
 
         {/* Stats */}

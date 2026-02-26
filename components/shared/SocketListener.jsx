@@ -8,6 +8,26 @@ export default function SocketListener() {
 
   useEffect(() => {
     const socket = getSocket();
+    // Capture PWA install prompt early so UI components mounted later
+    // (like `InstallPWA`) can still access it even if the event fired already.
+    function handleBeforeInstallPrompt(e) {
+      e.preventDefault();
+      try { window.__deferredPWA = e } catch (err) { }
+      try { window.dispatchEvent(new CustomEvent('pwa-available')) } catch (err) { }
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', () => {
+      try { window.__deferredPWA = null } catch (err) { }
+      try { window.dispatchEvent(new CustomEvent('pwa-installed')) } catch (err) { }
+    });
+    // Register a simple service worker so Chrome can consider the site a PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('Service worker registered:', reg.scope);
+      }).catch((err) => {
+        console.warn('Service worker registration failed:', err);
+      });
+    }
     function handleNewMessage(msg) {
       // show a toast for new message
       toast({
@@ -30,6 +50,7 @@ export default function SocketListener() {
       socket.off("notification:message", handleNewMessage);
       socket.off("notification:bid", handleBidNotification);
       socket.off("notification:payment", handlePaymentNotification);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, [toast]);
 
