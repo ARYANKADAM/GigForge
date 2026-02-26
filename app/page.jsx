@@ -26,7 +26,6 @@ export default function LandingPage() {
             src="/icon0.svg"
             alt="GigForge"
             className="w-6 h-6"
-            style={{ filter: "brightness(0) invert(1)" }}
           />
           <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
         </a>

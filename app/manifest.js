@@ -2,36 +2,24 @@ export default function manifest() {
   return {
     name: "GigForge - Connect Clients & Developers",
     short_name: "GigForge",
-    description: "A marketplace to post projects, bid, collaborate, and get paid.",
+    description:
+      "A marketplace to post projects, bid, collaborate, and get paid.",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#0a0a0a",
+    theme_color: "#0a0a0a",
+    orientation: "portrait",
     icons: [
       {
-        src: "/icon0.svg",
+        src: "/web-app-manifest-192x192.png",
         sizes: "192x192",
-        type: "image/svg+xml",
-        purpose: "any",
+        type: "image/png"
       },
       {
-        src: "/icon1.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/icon1.png",
+        src: "/web-app-manifest-512x512.png",
         sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/icon1.png",
-        sizes: "any",
-        type: "image/png",
-      },
-    ],
-    theme_color: "#0a0a0a",
-    background_color: "#0a0a0a",
-    display: "standalone",
-    start_url: "/",
-    orientation: "portrait",
-  }
+        type: "image/png"
+      }
+    ]
+  };
 }

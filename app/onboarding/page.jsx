@@ -103,7 +103,7 @@ export default function OnboardingPage() {
           <div className="mb-auto -mt-6 md:mt-0">
             <a href="/" className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
-                <img src="/icon0.svg" alt="GigForge" className="w-5 h-5" />
+                <img src="/icon0.svg" alt="GigForge" className="w-5 h-5" style={{ filter: "brightness(0) invert(1)" }} />
               </div>
               <span className="text-white font-bold text-base tracking-tight">GigForge</span>
             </a>
