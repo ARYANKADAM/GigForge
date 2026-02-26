@@ -10,6 +10,7 @@ const MessageSchema = new mongoose.Schema({
   content: { type: String, required: true },
   type: { type: String, enum: ["text", "file", "system"], default: "text" },
   fileUrl: { type: String },
+  edited: { type: Boolean, default: false },
   isRead: { type: Boolean, default: false },
 }, { timestamps: true });
 
