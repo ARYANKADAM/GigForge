@@ -35,12 +35,9 @@ export default function AuthLayout({ children }) {
       <div className="relative z-10 w-full flex flex-col items-center gap-6 px-4 py-10">
         {/* Centered logo for clean header */}
         <a href="/" className="flex items-center gap-2">
-          <img 
-            src="/icon0.svg" 
-            alt="GigForge" 
-            className="w-6 h-6"
-            style={{ filter: "brightness(0) invert(1)" }}
-          />
+          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+            <img src="/icon0.svg" alt="GigForge" className="w-6 h-6" />
+          </div>
           <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
         </a>
 

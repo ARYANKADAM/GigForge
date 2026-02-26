@@ -5,6 +5,12 @@ export default function manifest() {
     description: "A marketplace to post projects, bid, collaborate, and get paid.",
     icons: [
       {
+        src: "/icon0.svg",
+        sizes: "192x192",
+        type: "image/svg+xml",
+        purpose: "any",
+      },
+      {
         src: "/icon1.png",
         sizes: "192x192",
         type: "image/png",

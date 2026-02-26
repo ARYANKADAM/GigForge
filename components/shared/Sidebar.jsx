@@ -73,13 +73,8 @@ export default function Sidebar({ role }) {
       {/* Logo */}
       <div className="p-5 border-b border-white/5">
         <Link href="/dashboard" className="flex items-center gap-.5">
-          <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
-            <img 
-    src="/icon0.svg" 
-    alt="GigForge" 
-    className="w-6 h-6"
-    style={{ filter: "brightness(0) invert(1)" }}
-  />
+          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+            <img src="/icon0.svg" alt="GigForge" className="w-6 h-6" />
           </div>
           <span className="font-bold text-base text-white">GigForge</span>
         </Link>
