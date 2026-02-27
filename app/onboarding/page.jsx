@@ -102,9 +102,7 @@ export default function OnboardingPage() {
           {/* Logo at top */}
           <div className="mb-auto -mt-6 md:mt-0">
             <a href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
-                <img src="/icon0.svg" alt="GigForge" className="w-5 h-5" style={{ filter: "brightness(0) invert(1)" }} />
-              </div>
+              <Image src="/icon0.svg" alt="GigForge" width={28} height={28} className="w-7 h-7" />
               <span className="text-white font-bold text-base tracking-tight">GigForge</span>
             </a>
           </div>
@@ -235,12 +233,7 @@ export default function OnboardingPage() {
           {/* Logo */}
           <div className="relative z-10 ml-10 mb-auto">
             <a href="/" className="flex items-center gap-2">
-              <img
-                src="/icon0.svg"
-                alt="GigForge"
-                className="w-6 h-6"
-                style={{ filter: "brightness(0) invert(1)" }}
-              />
+              <Image src="/icon0.svg" alt="GigForge" width={24} height={24} className="w-6 h-6" />
               <span className="text-white font-bold text-xl tracking-tight">GigForge</span>
             </a>
           </div>
